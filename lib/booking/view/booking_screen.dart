@@ -16,6 +16,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:smarttravelapp/selected_responses_location_screen/SelectedResponsesLocationScreen.dart';
 
 class BookingScreen1 extends StatefulWidget {
   BookingScreen1({Key? key}) : super(key: key);
@@ -34,20 +35,23 @@ class _BookingScreen1State extends State<BookingScreen1> {
   int titleId = 0;
   StreamController<List<Map<String, dynamic>>> _controller =
   StreamController<List<Map<String, dynamic>>>();
+  List<String> selectedResponses = [];
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final Map arguments =
-    ModalRoute.of(context)!.settings.arguments as Map;
+    ModalRoute
+        .of(context)!
+        .settings
+        .arguments as Map;
     responses = arguments['responses'] ?? [];
     prompt = arguments['prompt'] ?? ''; // Initialize prompt value
-    destination1 = extractDestination(
-        prompt, 'I am planning to visit from', 'to');
-    destination2 = extractDestination(prompt, 'to', 'by road');
+    String destination1 = extractDestination(prompt, 'visit from', 'to');
+    String destination2 = extractDestination(prompt, 'to', 'by road');
     print('Des1:$destination1');
     print('Des:2$destination2');
-    promptLocation = '$destination1 to $destination2';
+    promptLocation = '$destination2';
     print('Prompt Loc: $promptLocation');
 
     // saveResponsesToDatabase(responses);
@@ -81,7 +85,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
 
   Future<int> insertTitleDatabase(String promptLocation) async {
     final String apiUrl =
-        'https://42d7-202-179-91-72.ngrok-free.app/destination_title/insertTitle'; // Change the URL to your server URL
+        'https://08bc-202-179-91-72.ngrok-free.app/destination_title/insertTitle'; // Change the URL to your server URL
 
     try {
       final response = await http.post(
@@ -112,7 +116,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
 
   Future<List<Map<String, dynamic>>> fetchResponses() async {
     final String url =
-        'https://42d7-202-179-91-72.ngrok-free.app/fetch_route/responses'; // Update the URL to match your server endpoint
+        'https://08bc-202-179-91-72.ngrok-free.app/fetch_route/responses'; // Update the URL to match your server endpoint
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -142,14 +146,15 @@ class _BookingScreen1State extends State<BookingScreen1> {
     }
   }
 
-  Future<void> saveResponsesToDatabase(
-      List<String> responses, int titleId) async {
+  Future<void> saveResponsesToDatabase(List<String> responses,
+      int titleId) async {
     final String apiUrl =
-        'https://42d7-202-179-91-72.ngrok-free.app/des_open_ai_response/saveResponses'; // Change the URL to your server URL
+        'https://08bc-202-179-91-72.ngrok-free.app/des_open_ai_response/saveResponses'; // Change the URL to your server URL
 
     try {
       for (String response in responses) {
-        final responseList = response.split('\n'); // Split response by newline
+        final responseList =
+        response.split('\n'); // Split response by newline
 
         for (String singleResponse in responseList) {
           final responsePart = singleResponse.trim();
@@ -164,7 +169,8 @@ class _BookingScreen1State extends State<BookingScreen1> {
             }),
           );
 
-          final responseData = jsonDecode(response.body); // Parse response body
+          final responseData =
+          jsonDecode(response.body); // Parse response body
 
           if (response.statusCode == 200) {
             print('Response "$responsePart" saved successfully');
@@ -180,8 +186,8 @@ class _BookingScreen1State extends State<BookingScreen1> {
   }
 
   String extractDestination(String prompt, String from, String to) {
-    final startIndex = prompt.indexOf(from) + from.length;
-    final endIndex = prompt.indexOf(to, startIndex);
+    final startIndex = prompt.indexOf(from);
+    final endIndex = prompt.indexOf(to, startIndex + from.length);
     return prompt.substring(startIndex, endIndex).trim();
   }
 
@@ -191,41 +197,79 @@ class _BookingScreen1State extends State<BookingScreen1> {
       appBar: AppBar(
         title: Text('Booking Screen'),
       ),
-      body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: _controller.stream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          } else {
-            List<Map<String, dynamic>>? responses = snapshot.data;
-
-            if (responses == null || responses.isEmpty) {
-              return Center(
-                child: Text('No data available'),
-              );
-            }
-
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: responses.map((response) {
-                  return _buildCard(response, withCheckbox: true);
-                }).toList(),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              '$promptLocation',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
-            );
-          }
-        },
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<List<Map<String, dynamic>>>(
+              stream: _controller.stream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error: ${snapshot.error}'),
+                  );
+                } else {
+                  List<Map<String, dynamic>>? responses = snapshot.data;
+
+                  if (responses == null || responses.isEmpty) {
+                    return Center(
+                      child: Text('No data available'),
+                    );
+                  }
+
+                  return SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: responses.map((response) {
+                        return _buildCard(response, withCheckbox: true);
+                      }).toList(),
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (selectedResponses.isNotEmpty) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        SelectedResponsesLocationScreen(selectedResponses),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('No response selected!'),
+                  ),
+                );
+              }
+            },
+            child: Text('Show Selected Responses'),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildCard(Map<String, dynamic> response, {bool withCheckbox = true}) {
+  Widget _buildCard(Map<String, dynamic> response,
+      {bool withCheckbox = true}) {
     String? journey = response['journey'];
     List<String> contents = [];
 
@@ -236,10 +280,14 @@ class _BookingScreen1State extends State<BookingScreen1> {
             .map((e) => e.trim())
             .toList();
       } else {
-        contents =
-            List<String>.from(response['text']).map((e) => e.toString()).toList();
+        contents = List<String>.from(response['text'])
+            .map((e) => e.toString())
+            .toList();
       }
     }
+
+    List<bool> isCheckedList =
+    List<bool>.generate(contents.length, (index) => false);
 
     List<Widget> placeWidgets = [];
 
@@ -247,16 +295,22 @@ class _BookingScreen1State extends State<BookingScreen1> {
       String place = contents[i];
       if (place.isNotEmpty) {
         Widget widgetToAdd;
-        if (i == 0) {
+        if (withCheckbox) {
           widgetToAdd = Row(
             children: [
-              if (withCheckbox)
-                Checkbox(
-                  value: true, // Change this value to manage checkbox state
-                  onChanged: (bool? value) {
-                    // Implement logic to handle checkbox state change
-                  },
-                ),
+              Checkbox(
+                value: isCheckedList[i],
+                onChanged: (bool? value) {
+                  setState(() {
+                    isCheckedList[i] = value!;
+                    if (value!) {
+                      selectedResponses.add(place);
+                    } else {
+                      selectedResponses.remove(place);
+                    }
+                  });
+                },
+              ),
               SizedBox(width: 10), // Added SizedBox to provide space between checkbox and text
               Expanded(
                 child: Text(place),
@@ -265,7 +319,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
           );
         } else {
           widgetToAdd = Padding(
-            padding: const EdgeInsets.only(left: 25.0), // Added padding to align the response text
+            padding: EdgeInsets.only(left: 25.0),
             child: Text(place),
           );
         }
@@ -277,132 +331,36 @@ class _BookingScreen1State extends State<BookingScreen1> {
       return SizedBox(); // Return an empty SizedBox if there are no placeWidgets
     }
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (journey != null) Text(journey),
-            SizedBox(height: 5),
-            ...placeWidgets,
-          ],
+    List<Widget> children = [];
+    if (journey != null && withCheckbox && contents.length > 1) {
+      children.add(
+        Padding(
+          padding: EdgeInsets.only(left: 8.0, bottom: 4.0),
+          child: Text(
+            journey,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
+    }
+
+    children.addAll(
+      placeWidgets.map(
+            (widget) => Card(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: widget,
+          ),
         ),
       ),
     );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    );
   }
+
 }
-
-
-
-  // Widget build(BuildContext context) {
-  //   List<LatLng> locations = [];
-  //
-  //   responses.forEach((response) {
-  //     List<String> sections = response.split('\n\n');
-  //     List<String> places = sections.sublist(1);
-  //     places.forEach((place) {
-  //       List<String> data = place.split(',');
-  //       if (data.length >= 3) {
-  //         String placeName = data[0].trim();
-  //         double latitude = double.tryParse(data[1].trim()) ?? 0.0;
-  //         double longitude = double.tryParse(data[2].trim()) ?? 0.0;
-  //         locations.add(LatLng(latitude, longitude));
-  //       }
-  //     });
-  //   });
-  //
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //       title: Text('Booking Screen'),
-  //     ),
-  //     body: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Expanded(
-  //           child: SingleChildScrollView(
-  //             child: Column(
-  //               mainAxisAlignment: MainAxisAlignment.center,
-  //               children: [
-  //                 SizedBox(height: 20),
-  //                 Text('Searched Places'),
-  //                 SizedBox(height: 10),
-  //                 Column(
-  //                   children: responses.map((response) {
-  //                     List<String> sections = response.split('\n\n');
-  //                     String title = sections.first;
-  //                     List<String> places = sections.sublist(1);
-  //
-  //                     return Card(
-  //                       child: Column(
-  //                         crossAxisAlignment: CrossAxisAlignment.start,
-  //                         children: [
-  //                           Padding(
-  //                             padding: EdgeInsets.all(8.0),
-  //                             child: Text(
-  //                               title,
-  //                               style: TextStyle(fontWeight: FontWeight.bold),
-  //                             ),
-  //                           ),
-  //                           Column(
-  //                             crossAxisAlignment: CrossAxisAlignment.start,
-  //                             children: places.map((place) {
-  //                               return Padding(
-  //                                 padding:
-  //                                 EdgeInsets.symmetric(horizontal: 16.0),
-  //                                 child: Text(place),
-  //                               );
-  //                             }).toList(),
-  //                           ),
-  //                         ],
-  //                       ),
-  //                     );
-  //                   }).toList(),
-  //                 ),
-  //                 SizedBox(height: 20),
-  //                 Container(
-  //                   height: 300,
-  //                   child: GoogleMap(
-  //                     initialCameraPosition: CameraPosition(
-  //                       target:
-  //                       locations.isNotEmpty ? locations.first : LatLng(0, 0),
-  //                       zoom: 10,
-  //                     ),
-  //                     markers: locations.map((latLng) {
-  //                       String placeName =
-  //                       _getPlaceName(latLng, responses);
-  //                       return Marker(
-  //                         markerId: MarkerId(placeName),
-  //                         position: latLng,
-  //                         infoWindow: InfoWindow(title: placeName),
-  //                       );
-  //                     }).toSet(),
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // Function to get the place name for a given location
-  String _getPlaceName(LatLng latLng, List<String> responses) {
-    for (String response in responses) {
-      List<String> sections = response.split('\n\n');
-      String title = sections.first;
-      List<String> places = sections.sublist(1);
-      for (String place in places) {
-        List<String> data = place.split(',');
-        double latitude = double.parse(data[1].trim());
-        double longitude = double.parse(data[2].trim());
-        if (LatLng(latitude, longitude) == latLng) {
-          return data[0].trim();
-        }
-      }
-    }
-    return ''; // Default if not found
-  }
-

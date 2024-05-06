@@ -14,7 +14,7 @@ class LoginController extends GetxController {
 
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:3002/login'), // Replace with your API endpoint
+          Uri.parse('https://c1ea-202-179-91-72.ngrok-free.app/login/login'), // Replace with your API endpoint
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
