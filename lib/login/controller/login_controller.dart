@@ -8,16 +8,44 @@ class LoginController extends GetxController {
   final TextEditingController passwordController = TextEditingController();
   final RxBool isLoading = false.obs;
 
-  void login() {
+  void login() async {
     if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
-      // Implement your login logic here
       isLoading.value = true; // Set loading to true during login process
-      // Simulating login process with a delay
-      Future.delayed(const Duration(seconds: 2), () {
-        isLoading.value = false; // Set loading to false after login process
-        // Navigate to HomeScreen
-        Get.offAllNamed('/home');
-      });
+
+      try {
+        final response = await http.post(
+          Uri.parse('http://localhost:3002/login'), // Replace with your API endpoint
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(<String, String>{
+            'email': emailController.text,
+            'password': passwordController.text,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> responseData = json.decode(response.body);
+          if (responseData['success'] == true) {
+            isLoading.value = false; // Set loading to false after successful login
+            // Navigate to HomeScreen
+            Get.offAllNamed('/home');
+          } else {
+            isLoading.value = false; // Set loading to false if login failed
+            Get.snackbar('Error', 'Invalid email or password',
+                snackPosition: SnackPosition.BOTTOM);
+          }
+        } else {
+          isLoading.value = false; // Set loading to false if server error occurred
+          Get.snackbar('Error', 'Server error',
+              snackPosition: SnackPosition.BOTTOM);
+        }
+      } catch (e) {
+        isLoading.value = false; // Set loading to false if an exception occurred
+        print('Exception occurred: $e');
+        Get.snackbar('Error', 'An error occurred',
+            snackPosition: SnackPosition.BOTTOM);
+      }
     } else {
       Get.snackbar('Error', 'Please enter email and password',
           snackPosition: SnackPosition.BOTTOM);
