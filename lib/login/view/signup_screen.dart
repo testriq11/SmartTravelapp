@@ -4,6 +4,65 @@
 //
 // import '../../home/view/home_screen.dart';
 //
+
+import 'package:flutter/material.dart';
+import '../controller/signup_controller.dart';
+
+
+class SignUpView extends StatefulWidget {
+  @override
+  _SignUpViewState createState() => _SignUpViewState();
+}
+
+class _SignUpViewState extends State<SignUpView> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  SignUpController _controller = SignUpController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Sign Up'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            TextField(
+              controller: _usernameController,
+              decoration: InputDecoration(labelText: 'Username'),
+            ),
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(labelText: 'Email'),
+            ),
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(labelText: 'Password'),
+              obscureText: true,
+            ),
+            SizedBox(height: 20.0),
+            ElevatedButton(
+              onPressed: () {
+                _controller.signUp(
+                  _usernameController.text,
+                  _emailController.text,
+                  _passwordController.text,
+                );
+              },
+              child: Text('Sign Up'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // class SignUpScreen extends StatelessWidget {
 //   const SignUpScreen({super.key});
 //

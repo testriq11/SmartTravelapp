@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smarttravelapp/booking/view/booking_screen.dart';
 import 'package:smarttravelapp/home/view/home_screen.dart';
+import 'package:smarttravelapp/login/controller/signup_controller.dart';
 import 'package:smarttravelapp/login/view/login_screen.dart';
+import 'package:smarttravelapp/login/view/signup_screen.dart';
 import 'package:smarttravelapp/splash/welcom_screen.dart';
 import 'package:smarttravelapp/login/controller/login_controller.dart'; // Import your LoginController
+  import 'package:smarttravelapp/login/view/signup_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,6 +31,14 @@ class MyApp extends StatelessWidget {
             // Initialize LoginController here
             Get.put(LoginController());
             return LoginScreen();
+          },
+        ),
+        GetPage(
+          name: '/signup',
+          page: () {
+            // Initialize LoginController here
+            Get.put(SignUpController());
+            return SignUpView();
           },
         ),
         GetPage(

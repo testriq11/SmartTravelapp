@@ -26,8 +26,7 @@ class WelcomeScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Navigate to sign up screen
-                // Get.toNamed('/signup');
+                Get.toNamed('/signup'); // Navigate to sign up screen
               },
               child: const Text('SignUp'),
             ),

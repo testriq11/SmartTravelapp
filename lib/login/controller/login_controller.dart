@@ -14,7 +14,7 @@ class LoginController extends GetxController {
 
       try {
         final response = await http.post(
-          Uri.parse('https://c1ea-202-179-91-72.ngrok-free.app/login/login'), // Replace with your API endpoint
+          Uri.parse('https://2119-202-179-91-72.ngrok-free.app/login/login'), // Replace with your API endpoint
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
@@ -32,7 +32,7 @@ class LoginController extends GetxController {
             Get.offAllNamed('/home');
           } else {
             isLoading.value = false; // Set loading to false if login failed
-            Get.snackbar('Error', 'Invalid email or password',
+            Get.snackbar('Error', responseData['error'],
                 snackPosition: SnackPosition.BOTTOM);
           }
         } else {

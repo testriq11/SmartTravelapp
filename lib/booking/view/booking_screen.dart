@@ -36,15 +36,13 @@ class _BookingScreen1State extends State<BookingScreen1> {
   StreamController<List<Map<String, dynamic>>> _controller =
   StreamController<List<Map<String, dynamic>>>();
   List<String> selectedResponses = [];
+  bool _isFetching = false; // Track whether responses are being fetched
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final Map arguments =
-    ModalRoute
-        .of(context)!
-        .settings
-        .arguments as Map;
+    ModalRoute.of(context)!.settings.arguments as Map;
     responses = arguments['responses'] ?? [];
     prompt = arguments['prompt'] ?? ''; // Initialize prompt value
     String destination1 = extractDestination(prompt, 'visit from', 'to');
@@ -79,13 +77,15 @@ class _BookingScreen1State extends State<BookingScreen1> {
     super.initState();
     // Schedule to fetch responses every 10 to 15 seconds
     Timer.periodic(Duration(seconds: 15), (timer) {
-      fetchResponses();
+      if (!_isFetching) {
+        fetchResponses();
+      }
     });
   }
 
   Future<int> insertTitleDatabase(String promptLocation) async {
     final String apiUrl =
-        'https://08bc-202-179-91-72.ngrok-free.app/destination_title/insertTitle'; // Change the URL to your server URL
+        'https://2119-202-179-91-72.ngrok-free.app/destination_title/insertTitle'; // Change the URL to your server URL
 
     try {
       final response = await http.post(
@@ -114,42 +114,45 @@ class _BookingScreen1State extends State<BookingScreen1> {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchResponses() async {
-    final String url =
-        'https://08bc-202-179-91-72.ngrok-free.app/fetch_route/responses'; // Update the URL to match your server endpoint
+  Future<void> fetchResponses() async {
+    if (!_controller.isClosed) {
+      _isFetching = true; // Set to true when fetching responses
+      final String url =
+          'https://2119-202-179-91-72.ngrok-free.app/fetch_route/responses'; // Update the URL to match your server endpoint
 
-    try {
-      final response = await http.get(Uri.parse(url));
+      try {
+        final response = await http.get(Uri.parse(url));
 
-      if (response.statusCode == 200) {
-        // If the server returns a successful response, parse the JSON
-        List<dynamic> responseData = json.decode(response.body);
+        if (response.statusCode == 200) {
+          // If the server returns a successful response, parse the JSON
+          List<dynamic> responseData = json.decode(response.body);
 
-        // Map each response part to a Map
-        List<Map<String, dynamic>> mappedResponse = responseData.map((part) {
-          return {
-            'cardIndex': part['cardIndex'],
-            'text': part['text']
-          };
-        }).toList();
+          // Map each response part to a Map
+          List<Map<String, dynamic>> mappedResponse = responseData.map((part) {
+            return {
+              'cardIndex': part['cardIndex'],
+              'text': part['text']
+            };
+          }).toList();
 
-        _controller.add(mappedResponse);
-
-        return mappedResponse;
-      } else {
-        // If the server returns an error response, throw an exception
-        throw Exception('Failed to load responses: ${response.statusCode}');
+          _controller.add(mappedResponse);
+        } else {
+          // If the server returns an error response, throw an exception
+          throw Exception('Failed to load responses: ${response.statusCode}');
+        }
+      } catch (error) {
+        // If an error occurs during the HTTP request, throw an exception
+        throw Exception('Failed to load responses: $error');
+      } finally {
+        _isFetching = false; // Set back to false after response is fetched
       }
-    } catch (error) {
-      // If an error occurs during the HTTP request, throw an exception
-      throw Exception('Failed to load responses: $error');
     }
   }
 
   Future<void> saveResponsesToDatabase(List<String> responses,
       int titleId) async {
     final String apiUrl =
-        'https://08bc-202-179-91-72.ngrok-free.app/des_open_ai_response/saveResponses'; // Change the URL to your server URL
+        'https://2119-202-179-91-72.ngrok-free.app/des_open_ai_response/saveResponses'; // Change the URL to your server URL
 
     try {
       for (String response in responses) {
@@ -362,5 +365,5 @@ class _BookingScreen1State extends State<BookingScreen1> {
       children: children,
     );
   }
-
 }
+
