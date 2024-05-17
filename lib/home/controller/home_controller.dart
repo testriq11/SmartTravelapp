@@ -179,17 +179,10 @@ class HomeController extends GetxController {
   final TextEditingController destinationController3 = TextEditingController();
   RxString selectedRoute = 'car'.obs;
 
-  // Create a new instance of http.Client
-  final client = http.Client();
-
-  // Set the timeout duration (in milliseconds)
-  final timeoutDuration = Duration(seconds: 40);
-
   Future<void> search(String selectedRoute) async {
     String destination1 = destinationController1.text;
     String destination2 = destinationController2.text;
 
-    // Get current location of the user
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
@@ -202,29 +195,23 @@ class HomeController extends GetxController {
         "my current location is $placeName & the GPS coordinates are (Latitude: $latitude, Longitude: $longitude) I am planning to visit from  $placeName to $destination2  by road using $selectedRoute, show me the nearby places to visit";
 
     try {
-      // Make API request using ApiService to get responses
       List<ChatModel> responses = await ApiService.sendMessage(
         message: prompt,
         modelId: 'gpt-3.5-turbo-0301',
       );
 
-      // Extract messages from responses
       List<String> messages = responses.map((e) => e.msg).toList();
-      print("Mes>>$messages");
 
-      // Navigate to booking screen with responses and prompt
       Get.toNamed(
         '/booking',
         arguments: {
           'destination1': destination1,
           'destination2': destination2,
           'responses': messages,
-          'prompt': prompt, // Pass prompt here
+          'prompt': prompt,
         },
       );
     } catch (e) {
-      // Error handling
-      print("Error: $e");
       Get.dialog(
         AlertDialog(
           title: Text("Error"),
@@ -252,52 +239,14 @@ class HomeController extends GetxController {
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
-        timeLimit: Duration(seconds: 20), // Set a timeout of 5 seconds
+        timeLimit: Duration(seconds: 20),
       );
       List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude, position.longitude);
       String currentLocation =
       placemarks.isNotEmpty ? placemarks[0].name ?? 'Unknown Place' : 'Unknown Place';
       destinationController1.text = currentLocation;
-    } on TimeoutException catch (e) {
-      print('Error getting current location: $e');
-      // Show a dialog to inform the user about the error
-      Get.dialog(
-        AlertDialog(
-          title: Text("Error"),
-          content: Text(
-              "Couldn't get your current location within the specified time. Please make sure your GPS is enabled and try again."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Get.back();
-              },
-              child: Text("OK"),
-            ),
-          ],
-        ),
-      );
-    } on PlatformException catch (e) {
-      print('Error getting current location: $e');
-      // Show a dialog to inform the user about the error
-      Get.dialog(
-        AlertDialog(
-          title: Text("Error"),
-          content: Text(
-              "Couldn't get your current location. Please make sure your GPS is enabled and try again."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Get.back();
-              },
-              child: Text("OK"),
-            ),
-          ],
-        ),
-      );
     } catch (e) {
-      print('Error getting current location: $e');
-      // Show a dialog to inform the user about the error
       Get.dialog(
         AlertDialog(
           title: Text("Error"),

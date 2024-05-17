@@ -14,7 +14,7 @@ class LoginController extends GetxController {
 
       try {
         final response = await http.post(
-          Uri.parse('https://2119-202-179-91-72.ngrok-free.app/login/login'), // Replace with your API endpoint
+          Uri.parse('https://5095-202-179-91-72.ngrok-free.app/login/login'), // Replace with your API endpoint
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
@@ -28,8 +28,13 @@ class LoginController extends GetxController {
           final Map<String, dynamic> responseData = json.decode(response.body);
           if (responseData['success'] == true) {
             isLoading.value = false; // Set loading to false after successful login
-            // Navigate to HomeScreen
-            Get.offAllNamed('/home');
+
+            // Navigate to HomeScreen and pass user data
+            Get.offAllNamed('/home', arguments: {
+              'id': responseData['user']['id'],
+              'username': responseData['user']['username'],
+              'email': responseData['user']['email']
+            });
           } else {
             isLoading.value = false; // Set loading to false if login failed
             Get.snackbar('Error', responseData['error'],
@@ -52,6 +57,56 @@ class LoginController extends GetxController {
     }
   }
 }
+
+// class LoginController extends GetxController {
+//   final TextEditingController emailController = TextEditingController();
+//   final TextEditingController passwordController = TextEditingController();
+//   final RxBool isLoading = false.obs;
+//
+//   void login() async {
+//     if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
+//       isLoading.value = true; // Set loading to true during login process
+//
+//       try {
+//         final response = await http.post(
+//           Uri.parse('https://17da-202-179-91-72.ngrok-free.app/login/login'), // Replace with your API endpoint
+//           headers: <String, String>{
+//             'Content-Type': 'application/json; charset=UTF-8',
+//           },
+//           body: jsonEncode(<String, String>{
+//             'email': emailController.text,
+//             'password': passwordController.text,
+//           }),
+//         );
+//
+//         if (response.statusCode == 200) {
+//           final Map<String, dynamic> responseData = json.decode(response.body);
+//           if (responseData['success'] == true) {
+//             isLoading.value = false; // Set loading to false after successful login
+//             // Navigate to HomeScreen
+//             Get.offAllNamed('/home');
+//           } else {
+//             isLoading.value = false; // Set loading to false if login failed
+//             Get.snackbar('Error', responseData['error'],
+//                 snackPosition: SnackPosition.BOTTOM);
+//           }
+//         } else {
+//           isLoading.value = false; // Set loading to false if server error occurred
+//           Get.snackbar('Error', 'Server error',
+//               snackPosition: SnackPosition.BOTTOM);
+//         }
+//       } catch (e) {
+//         isLoading.value = false; // Set loading to false if an exception occurred
+//         print('Exception occurred: $e');
+//         Get.snackbar('Error', 'An error occurred',
+//             snackPosition: SnackPosition.BOTTOM);
+//       }
+//     } else {
+//       Get.snackbar('Error', 'Please enter email and password',
+//           snackPosition: SnackPosition.BOTTOM);
+//     }
+//   }
+// }
 
 // class LoginController extends GetxController {
 //   final TextEditingController emailController = TextEditingController();

@@ -228,6 +228,9 @@
 
     @override
     Widget build(BuildContext context) {
+      final arguments = Get.arguments;
+      final String username = arguments['username'];
+      final int id = arguments['id'];
       return Scaffold(
         appBar: AppBar(
           title: const Text('Home'),
@@ -239,11 +242,15 @@
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+                  // Display the username and id
+                  Text('Welcome, $username!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('Your ID is $id', style: TextStyle(fontSize: 16)),
+                  SizedBox(height: 20),
+
                   _buildDestinationTextField(controller.destinationController1, 'Current Location', Icons.my_location, () async {
                     await controller.getCurrentLocation();
                   }),
                   _buildDestinationTextField(controller.destinationController2, 'Search Destination 2', Icons.location_on, null),
-                  // _buildDestinationTextField(controller.destinationController3, 'Search Destination 3', Icons.location_on, null),
                   SizedBox(height: 20),
                   Text('Preferred Route:', style: TextStyle(fontSize: 16)),
                   Obx(() => Row(
@@ -258,11 +265,9 @@
                       ),
                       Row(
                         children: [
-                          Icon(Icons.directions_car), // Car icon
-                          // Text('Car'), // Car text
+                          Icon(Icons.directions_car),
                         ],
                       ),
-
                       Radio(
                         value: 'bike',
                         groupValue: controller.selectedRoute.value,
@@ -272,17 +277,14 @@
                       ),
                       Row(
                         children: [
-                          Icon(Icons.directions_bike), // Bike icon
-                          // Text('Bike'), // Bike text
+                          Icon(Icons.directions_bike),
                         ],
                       ),
-
                     ],
                   )),
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // Show a SnackBar with a loading message and duration of 20 seconds
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Row(
@@ -292,13 +294,11 @@
                               Text("Please Wait Getting Routes"),
                             ],
                           ),
-                          duration: Duration(seconds: 20), // Set duration to 20 seconds
+                          duration: Duration(seconds: 20),
                         ),
                       );
 
-                      // Call the search method and pass the selected route value
                       controller.search(controller.selectedRoute.value).then((_) {
-                        // Close the SnackBar when search is completed
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       });
                     },

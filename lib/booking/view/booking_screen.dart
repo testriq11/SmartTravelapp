@@ -85,7 +85,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
 
   Future<int> insertTitleDatabase(String promptLocation) async {
     final String apiUrl =
-        'https://2119-202-179-91-72.ngrok-free.app/destination_title/insertTitle'; // Change the URL to your server URL
+        'https://5095-202-179-91-72.ngrok-free.app/destination_title/insertTitle'; // Change the URL to your server URL
 
     try {
       final response = await http.post(
@@ -118,7 +118,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
     if (!_controller.isClosed) {
       _isFetching = true; // Set to true when fetching responses
       final String url =
-          'https://2119-202-179-91-72.ngrok-free.app/fetch_route/responses'; // Update the URL to match your server endpoint
+          'https://5095-202-179-91-72.ngrok-free.app/fetch_route/responses'; // Update the URL to match your server endpoint
 
       try {
         final response = await http.get(Uri.parse(url));
@@ -152,7 +152,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
   Future<void> saveResponsesToDatabase(List<String> responses,
       int titleId) async {
     final String apiUrl =
-        'https://2119-202-179-91-72.ngrok-free.app/des_open_ai_response/saveResponses'; // Change the URL to your server URL
+        'https://5095-202-179-91-72.ngrok-free.app/des_open_ai_response/saveResponses'; // Change the URL to your server URL
 
     try {
       for (String response in responses) {
@@ -271,9 +271,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
     );
   }
 
-  Widget _buildCard(Map<String, dynamic> response,
-      {bool withCheckbox = true}) {
-    String? journey = response['journey'];
+  Widget _buildCard(Map<String, dynamic> response, {bool withCheckbox = true}) {
     List<String> contents = [];
 
     if (response['text'] != null) {
@@ -289,9 +287,6 @@ class _BookingScreen1State extends State<BookingScreen1> {
       }
     }
 
-    List<bool> isCheckedList =
-    List<bool>.generate(contents.length, (index) => false);
-
     List<Widget> placeWidgets = [];
 
     for (var i = 0; i < contents.length; i++) {
@@ -299,13 +294,17 @@ class _BookingScreen1State extends State<BookingScreen1> {
       if (place.isNotEmpty) {
         Widget widgetToAdd;
         if (withCheckbox) {
+          bool isChecked = selectedResponses.contains(place);
           widgetToAdd = Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Expanded(
+                child: Text(place),
+              ),
               Checkbox(
-                value: isCheckedList[i],
+                value: isChecked,
                 onChanged: (bool? value) {
                   setState(() {
-                    isCheckedList[i] = value!;
                     if (value!) {
                       selectedResponses.add(place);
                     } else {
@@ -313,10 +312,6 @@ class _BookingScreen1State extends State<BookingScreen1> {
                     }
                   });
                 },
-              ),
-              SizedBox(width: 10), // Added SizedBox to provide space between checkbox and text
-              Expanded(
-                child: Text(place),
               ),
             ],
           );
@@ -334,36 +329,17 @@ class _BookingScreen1State extends State<BookingScreen1> {
       return SizedBox(); // Return an empty SizedBox if there are no placeWidgets
     }
 
-    List<Widget> children = [];
-    if (journey != null && withCheckbox && contents.length > 1) {
-      children.add(
-        Padding(
-          padding: EdgeInsets.only(left: 8.0, bottom: 4.0),
-          child: Text(
-            journey,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      );
-    }
-
-    children.addAll(
-      placeWidgets.map(
-            (widget) => Card(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: widget,
-          ),
+    return Card(
+      margin: EdgeInsets.all(8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: placeWidgets,
         ),
       ),
     );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: children,
-    );
   }
+
 }
 
