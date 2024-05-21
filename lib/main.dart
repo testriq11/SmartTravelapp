@@ -50,6 +50,14 @@ class MyApp extends StatelessWidget {
         //   page: () => BookingScreen1(destination1: '', destination2: '', destination3: '', responses: []),
         //
         // ),
+        // GetPage(
+        //   name: '/booking',
+        //   page: () {
+        //     // Safely get the 'id' argument and provide a default value if it's null
+        //     int id = Get.arguments != null && Get.arguments['id'] != null ? Get.arguments['id'] : 0;
+        //     return BookingScreen1(id: id);
+        //   },
+        // ),.
         GetPage(name: '/booking', page: () => BookingScreen1()),
       ],
     );

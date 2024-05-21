@@ -4,7 +4,7 @@ import 'dart:convert'; // Import dart:convert to use json.encode
 
 class SignUpController {
   Future<void> signUp(String username, String email, String password) async {
-    final url = 'https://5095-202-179-91-72.ngrok-free.app/signup/signup';
+    final url = 'https://87e6-202-179-91-72.ngrok-free.app/signup/signup';
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'}, // Add content-type header

@@ -19,6 +19,7 @@ import 'package:http/http.dart' as http;
 import 'package:smarttravelapp/selected_responses_location_screen/SelectedResponsesLocationScreen.dart';
 
 class BookingScreen1 extends StatefulWidget {
+  // Declare id as a parameter
   BookingScreen1({Key? key}) : super(key: key);
 
   @override
@@ -29,10 +30,17 @@ class BookingScreen1 extends StatefulWidget {
 class _BookingScreen1State extends State<BookingScreen1> {
   List<String> responses = [];
   late String prompt;
+  late int uid;
   late String destination1;
   late String destination2;
-  late String promptLocation;
+  late String promptLocation; // Initialize promptLocation
   int titleId = 0;
+
+  // Initialize promptLocation in the constructor
+  _BookingScreen1State() {
+    promptLocation = ''; // Initialize promptLocation
+  }
+
   StreamController<List<Map<String, dynamic>>> _controller =
   StreamController<List<Map<String, dynamic>>>();
   List<String> selectedResponses = [];
@@ -41,23 +49,29 @@ class _BookingScreen1State extends State<BookingScreen1> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final Map arguments =
-    ModalRoute.of(context)!.settings.arguments as Map;
-    responses = arguments['responses'] ?? [];
-    prompt = arguments['prompt'] ?? ''; // Initialize prompt value
-    String destination1 = extractDestination(prompt, 'visit from', 'to');
-    String destination2 = extractDestination(prompt, 'to', 'by road');
-    print('Des1:$destination1');
-    print('Des:2$destination2');
-    promptLocation = '$destination2';
-    print('Prompt Loc: $promptLocation');
+    final Map? arguments =
+    ModalRoute.of(context)!.settings.arguments as Map?;
+    if (arguments != null) {
+      responses = arguments['responses'] ?? [];
+      prompt = arguments['prompt'] ?? ''; // Initialize prompt value
+      destination1 = extractDestination(prompt, 'visit from', 'to');
+      destination2 = extractDestination(prompt, 'to', 'by road');
+      promptLocation = destination2;
+      uid = arguments['id'];// Initialize promptLocation here
+      print('Des1:$destination1');
+      print('Des:2$destination2');
+      print('Prompt Loc: $promptLocation');
+      print('id:$uid');
+
+
+    }
 
     // saveResponsesToDatabase(responses);
     insertTitleDatabase(promptLocation).then((id) {
       setState(() {
         titleId = id; // Set the title ID
       });
-      saveResponsesToDatabase(responses, titleId); // Pass titleId here
+      saveResponsesToDatabase(responses, titleId,uid); // Pass titleId here
     });
 
     // Fetch responses initially after a delay of 10 seconds
@@ -75,6 +89,8 @@ class _BookingScreen1State extends State<BookingScreen1> {
   @override
   void initState() {
     super.initState();
+
+
     // Schedule to fetch responses every 10 to 15 seconds
     Timer.periodic(Duration(seconds: 15), (timer) {
       if (!_isFetching) {
@@ -85,7 +101,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
 
   Future<int> insertTitleDatabase(String promptLocation) async {
     final String apiUrl =
-        'https://5095-202-179-91-72.ngrok-free.app/destination_title/insertTitle'; // Change the URL to your server URL
+        'https://87e6-202-179-91-72.ngrok-free.app/destination_title/insertTitle'; // Change the URL to your server URL
 
     try {
       final response = await http.post(
@@ -118,7 +134,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
     if (!_controller.isClosed) {
       _isFetching = true; // Set to true when fetching responses
       final String url =
-          'https://5095-202-179-91-72.ngrok-free.app/fetch_route/responses'; // Update the URL to match your server endpoint
+          'https://87e6-202-179-91-72.ngrok-free.app/fetch_route/responses'; // Update the URL to match your server endpoint
 
       try {
         final response = await http.get(Uri.parse(url));
@@ -149,37 +165,33 @@ class _BookingScreen1State extends State<BookingScreen1> {
     }
   }
 
-  Future<void> saveResponsesToDatabase(List<String> responses,
-      int titleId) async {
-    final String apiUrl =
-        'https://5095-202-179-91-72.ngrok-free.app/des_open_ai_response/saveResponses'; // Change the URL to your server URL
+    Future<void> saveResponsesToDatabase(List<String> responses, int titleId, int userId) async {
+    final String apiUrl = 'https://87e6-202-179-91-72.ngrok-free.app/des_open_ai_response/saveResponses'; // Change the URL to your server URL
 
     try {
       for (String response in responses) {
-        final responseList =
-        response.split('\n'); // Split response by newline
+        final responseList = response.split('\n'); // Split response by newline
 
         for (String singleResponse in responseList) {
           final responsePart = singleResponse.trim();
-          final response = await http.post(
+          final httpResponse = await http.post(
             Uri.parse(apiUrl),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
             },
             body: jsonEncode(<String, dynamic>{
               'response_text': responsePart,
-              'title_id': titleId, // Send title ID along with the response
+              'title_id': titleId,
+              'user_id': userId // Send user_id along with the response
             }),
           );
 
-          final responseData =
-          jsonDecode(response.body); // Parse response body
+          final responseData = jsonDecode(httpResponse.body); // Parse response body
 
-          if (response.statusCode == 200) {
+          if (httpResponse.statusCode == 200) {
             print('Response "$responsePart" saved successfully');
           } else {
-            print(
-                'Failed to save response "$responsePart". Error: ${responseData['error']}'); // Print error from server
+            print('Failed to save response "$responsePart". Error: ${responseData['error']}'); // Print error from server
           }
         }
       }
@@ -187,6 +199,46 @@ class _BookingScreen1State extends State<BookingScreen1> {
       print('Failed to connect to the server. Error: $e');
     }
   }
+
+  // Future<void> saveResponsesToDatabase(List<String> responses,
+  //     int titleId) async {
+  //   final String apiUrl =
+  //       'https://b226-202-179-91-72.ngrok-free.app/des_open_ai_response/saveResponses'; // Change the URL to your server URL
+  //
+  //   try {
+  //     for (String response in responses) {
+  //       final responseList =
+  //       response.split('\n'); // Split response by newline
+  //
+  //       for (String singleResponse in responseList) {
+  //         final responsePart = singleResponse.trim();
+  //         final response = await http.post(
+  //           Uri.parse(apiUrl),
+  //           headers: <String, String>{
+  //             'Content-Type': 'application/json; charset=UTF-8',
+  //           },
+  //           body: jsonEncode(<String, dynamic>{
+  //             'response_text': responsePart,
+  //             'title_id': titleId,
+  //              'id' :  id                // Send title ID along with the response
+  //           }),
+  //         );
+  //
+  //         final responseData =
+  //         jsonDecode(response.body); // Parse response body
+  //
+  //         if (response.statusCode == 200) {
+  //           print('Response "$responsePart" saved successfully');
+  //         } else {
+  //           print(
+  //               'Failed to save response "$responsePart". Error: ${responseData['error']}'); // Print error from server
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print('Failed to connect to the server. Error: $e');
+  //   }
+  // }
 
   String extractDestination(String prompt, String from, String to) {
     final startIndex = prompt.indexOf(from);

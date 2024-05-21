@@ -179,7 +179,7 @@ class HomeController extends GetxController {
   final TextEditingController destinationController3 = TextEditingController();
   RxString selectedRoute = 'car'.obs;
 
-  Future<void> search(String selectedRoute) async {
+  Future<void> search(String selectedRoute,int id) async {
     String destination1 = destinationController1.text;
     String destination2 = destinationController2.text;
 
@@ -205,6 +205,7 @@ class HomeController extends GetxController {
       Get.toNamed(
         '/booking',
         arguments: {
+          'id': id,
           'destination1': destination1,
           'destination2': destination2,
           'responses': messages,
