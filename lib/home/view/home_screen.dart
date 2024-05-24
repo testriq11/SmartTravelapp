@@ -215,8 +215,11 @@
   // }
 
 
-  import 'package:flutter/material.dart';
+  import 'dart:convert';
+
+import 'package:flutter/material.dart';
   import 'package:get/get.dart';
+import 'package:smarttravelapp/constants/api_consts.dart';
   import 'package:smarttravelapp/home/controller/home_controller.dart';
 
   import 'package:flutter/material.dart';
@@ -336,7 +339,7 @@
   import 'package:flutter/material.dart';
   import 'package:get/get.dart';
   import 'package:smarttravelapp/home/controller/home_controller.dart';
-
+  import 'package:http/http.dart' as http;
 import '../../booking/view/booking_screen.dart';
 
   // Define a global controller to manage and share state
@@ -371,8 +374,9 @@ import '../../booking/view/booking_screen.dart';
 
  final List<Widget> _widgetOptions = <Widget>[
         HomeView(username: username, id: id),
-        ProfileView(),
-        BookingHistoryView(id: id),
+        ProfileView(id:id),
+        BookingScreen()
+        // BookingHistoryView(id: id),
       ];
       return Scaffold(
         appBar: AppBar(
@@ -519,34 +523,226 @@ import '../../booking/view/booking_screen.dart';
     }
   }
 
-  class ProfileView extends StatelessWidget {
-    @override
-    Widget build(BuildContext context) {
-      return Center(
-        child: Text('Profile Page', style: TextStyle(fontSize: 20)),
-      );
-    }
-  }
+  // class ProfileView extends StatelessWidget {
+  //   @override
+  //   Widget build(BuildContext context) {
+  //     return Center(
+  //       child: Text('Profile Page', style: TextStyle(fontSize: 20)),
+  //     );
+  //   }
+  // }
 
-  class BookingHistoryView extends StatelessWidget {
+  class ProfileView extends StatelessWidget {
     final int id;
-    const BookingHistoryView({Key? key, required this.id}) : super(key: key);
+    const ProfileView({super.key, required this.id});
+
     @override
     Widget build(BuildContext context) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Booking History', style: TextStyle(fontSize: 20)),
-            SizedBox(height: 10),
-            Text('User ID: $id', style: TextStyle(fontSize: 16)),
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Profile'),
+        ),
+        body: ListView(
+          children: <Widget>[
+            ListTile(
+              title: const Text('Profile'),
+              onTap: () {
+                // Navigate to profile screen
+              },
+            ),
+            ListTile(
+              title: const Text('My Trips'),
+              onTap: () {
+                // Navigate to my trips screen
+              },
+            ),
+            ListTile(
+              title: const Text('My Bookings'),
+              onTap: () {
+                // Navigate to my bookings screen
+                Get.toNamed('/bookingHistory', arguments: {'id': id});
+              },
+            ),
+            ListTile(
+              title: const Text('Settings'),
+              onTap: () {
+                // Navigate to settings screen
+              },
+            ),
+            ListTile(
+              title: const Text('Share App'),
+              onTap: () {
+                // Navigate to share app screen
+              },
+            ),
+            ListTile(
+              title: const Text('Rate App'),
+              onTap: () {
+                // Redirect to play store for rating
+              },
+            ),
+            ListTile(
+              title: const Text('Help'),
+              onTap: () {
+                // Navigate to help/chat screen
+              },
+            ),
+            ListTile(
+              title: const Text('Contact Us'),
+              onTap: () {
+                // Navigate to contact us screen
+              },
+            ),
+            ListTile(
+              title: const Text('Logout'),
+              onTap: () {
+                // Implement logout functionality
+              },
+            ),
           ],
         ),
       );
     }
   }
 
+  class BookingScreen extends StatelessWidget {
+    const BookingScreen({super.key});
 
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Booking'),
+        ),
+        body: ListView(
+          children: <Widget>[
+            ListTile(
+              title: const Text('Hotels'),
+              onTap: () {
+                // Navigate to hotels list screen
+              },
+            ),
+            ListTile(
+              title: const Text('Flights'),
+              onTap: () {
+                // Navigate to flights screen
 
+              },
+            ),
+            ListTile(
+              title: const Text('Trains'),
+              onTap: () {
+                // Navigate to trains screen
+              },
+            ),
+            ListTile(
+              title: const Text('Restaurants'),
+              onTap: () {
+                // Navigate to restaurants list screen
+              },
+            ),
+          ],
+        ),
+      );
+    }
+  }
+  class BookingHistoryView extends StatefulWidget {
+    final int id;
+    const BookingHistoryView({Key? key, required this.id}) : super(key: key);
 
+    @override
+    _BookingHistoryViewState createState() => _BookingHistoryViewState();
+  }
 
+  class _BookingHistoryViewState extends State<BookingHistoryView> {
+    List<dynamic> responseData = [];
+    bool isLoading = true;
+    String errorMessage = '';
+
+    @override
+    void initState() {
+      super.initState();
+      fetchBookingHistory();
+    }
+
+    Future<void> fetchBookingHistory() async {
+      final url = '$NGROK_URL/booking_history/responses/${widget.id}';
+      try {
+        final response = await http.get(Uri.parse(url));
+
+        if (response.statusCode == 200) {
+          setState(() {
+            responseData = json.decode(response.body);
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            errorMessage = 'Error: ${response.statusCode}';
+            isLoading = false;
+          });
+        }
+      } catch (e) {
+        setState(() {
+          errorMessage = 'Failed to load data: $e';
+          isLoading = false;
+        });
+      }
+    }
+
+    @override
+    Widget build(BuildContext context) {
+      // Filter out empty response_text items
+      final nonEmptyResponseData = responseData.where((data) =>
+      data['text']
+          .trim()
+          .isNotEmpty).toList();
+
+      return Center(
+        child: isLoading
+            ? CircularProgressIndicator()
+            : errorMessage.isNotEmpty
+            ? Text(
+            errorMessage, style: TextStyle(fontSize: 16, color: Colors.red))
+            : SingleChildScrollView(
+      child:  Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Booking History', style: TextStyle(fontSize: 20)),
+            SizedBox(height: 10),
+            Text('User ID: ${widget.id}', style: TextStyle(fontSize: 16)),
+            SizedBox(height: 10),
+            Card(
+              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: ExpansionTile(
+                  title: Text('Booking History',
+                      style: TextStyle(fontSize: 20, color: Colors.black)),
+                  children: [
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: nonEmptyResponseData.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          margin: EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 5),
+                          child: Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Text(
+                              nonEmptyResponseData[index]['text'] ??
+                                  '',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ));
+    }}

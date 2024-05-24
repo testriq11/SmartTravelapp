@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
+import 'package:smarttravelapp/constants/api_consts.dart';
 
 class LoginController extends GetxController {
   final TextEditingController emailController = TextEditingController();
@@ -14,7 +15,7 @@ class LoginController extends GetxController {
 
       try {
         final response = await http.post(
-          Uri.parse('https://87e6-202-179-91-72.ngrok-free.app/login/login'), // Replace with your API endpoint
+          Uri.parse('$NGROK_URL/login/login'), // Replace with your API endpoint
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },

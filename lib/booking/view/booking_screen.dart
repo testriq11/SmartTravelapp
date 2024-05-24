@@ -18,6 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:smarttravelapp/selected_responses_location_screen/SelectedResponsesLocationScreen.dart';
 
+import '../../constants/api_consts.dart';
+
 class BookingScreen1 extends StatefulWidget {
   // Declare id as a parameter
   BookingScreen1({Key? key}) : super(key: key);
@@ -101,7 +103,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
 
   Future<int> insertTitleDatabase(String promptLocation) async {
     final String apiUrl =
-        'https://87e6-202-179-91-72.ngrok-free.app/destination_title/insertTitle'; // Change the URL to your server URL
+        '$NGROK_URL/destination_title/insertTitle'; // Change the URL to your server URL
 
     try {
       final response = await http.post(
@@ -134,7 +136,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
     if (!_controller.isClosed) {
       _isFetching = true; // Set to true when fetching responses
       final String url =
-          'https://87e6-202-179-91-72.ngrok-free.app/fetch_route/responses'; // Update the URL to match your server endpoint
+          '$NGROK_URL/fetch_route/responses'; // Update the URL to match your server endpoint
 
       try {
         final response = await http.get(Uri.parse(url));
@@ -166,7 +168,7 @@ class _BookingScreen1State extends State<BookingScreen1> {
   }
 
     Future<void> saveResponsesToDatabase(List<String> responses, int titleId, int userId) async {
-    final String apiUrl = 'https://87e6-202-179-91-72.ngrok-free.app/des_open_ai_response/saveResponses'; // Change the URL to your server URL
+    final String apiUrl = '$NGROK_URL/des_open_ai_response/saveResponses'; // Change the URL to your server URL
 
     try {
       for (String response in responses) {

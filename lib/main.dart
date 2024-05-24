@@ -45,6 +45,9 @@ class MyApp extends StatelessWidget {
           name: '/home',
           page: () => HomeScreen(),
         ),
+        GetPage(name: '/', page: () => ProfileView(id: Get.arguments['id'])),
+
+        GetPage(name: '/bookingHistory', page: () => BookingHistoryView(id: Get.arguments['id'])),
         // GetPage(
         //   name: '/booking',
         //   page: () => BookingScreen1(destination1: '', destination2: '', destination3: '', responses: []),
