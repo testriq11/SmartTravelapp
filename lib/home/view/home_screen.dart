@@ -554,13 +554,14 @@ import '../../booking/view/booking_screen.dart';
               title: const Text('My Trips'),
               onTap: () {
                 // Navigate to my trips screen
+                Get.toNamed('/bookingHistory', arguments: {'id': id});
               },
             ),
             ListTile(
               title: const Text('My Bookings'),
               onTap: () {
                 // Navigate to my bookings screen
-                Get.toNamed('/bookingHistory', arguments: {'id': id});
+
               },
             ),
             ListTile(
@@ -646,6 +647,8 @@ import '../../booking/view/booking_screen.dart';
       );
     }
   }
+
+
   class BookingHistoryView extends StatefulWidget {
     final int id;
     const BookingHistoryView({Key? key, required this.id}) : super(key: key);
@@ -691,58 +694,71 @@ import '../../booking/view/booking_screen.dart';
 
     @override
     Widget build(BuildContext context) {
-      // Filter out empty response_text items
-      final nonEmptyResponseData = responseData.where((data) =>
-      data['text']
-          .trim()
-          .isNotEmpty).toList();
+      // Group response data by title
+      Map<String, List<String>> groupedData = {};
+      responseData.forEach((data) {
+        String title = data['title'];
+        String text = data['text'];
+        if (!groupedData.containsKey(title)) {
+          groupedData[title] = [];
+        }
+        groupedData[title]!.add(text);
+      });
 
       return Center(
         child: isLoading
             ? CircularProgressIndicator()
             : errorMessage.isNotEmpty
             ? Text(
-            errorMessage, style: TextStyle(fontSize: 16, color: Colors.red))
+          errorMessage,
+          style: TextStyle(fontSize: 16, color: Colors.red),
+        )
             : SingleChildScrollView(
-      child:  Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Booking History', style: TextStyle(fontSize: 20)),
-            SizedBox(height: 10),
-            Text('User ID: ${widget.id}', style: TextStyle(fontSize: 16)),
-            SizedBox(height: 10),
-            Card(
-              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              child: Padding(
-                padding: EdgeInsets.all(10),
-                child: ExpansionTile(
-                  title: Text('Booking History',
-                      style: TextStyle(fontSize: 20, color: Colors.black)),
-                  children: [
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: nonEmptyResponseData.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          margin: EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 5),
-                          child: Padding(
-                            padding: EdgeInsets.all(10),
-                            child: Text(
-                              nonEmptyResponseData[index]['text'] ??
-                                  '',
-                              style: TextStyle(fontSize: 16),
-                            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Trip History', style: TextStyle(fontSize: 20)),
+              SizedBox(height: 10),
+              Text('User ID: ${widget.id}', style: TextStyle(fontSize: 16)),
+              SizedBox(height: 10),
+              Column(
+                children: groupedData.entries.map((entry) {
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: ExpansionTile(
+                        title: Text(
+                          entry.key,
+                          style: TextStyle(fontSize: 20, color: Colors.black),
+                        ),
+                        children: [
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: entry.value.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                margin: EdgeInsets.symmetric(vertical: 5),
+                                child: Padding(
+                                  padding: EdgeInsets.all(10),
+                                  child: Text(
+                                    entry.value[index] ?? '',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  );
+                }).toList(),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ));
-    }}
+      );
+    }
+  }
