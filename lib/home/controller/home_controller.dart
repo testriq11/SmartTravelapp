@@ -178,8 +178,9 @@ class HomeController extends GetxController {
   final TextEditingController destinationController2 = TextEditingController();
   final TextEditingController destinationController3 = TextEditingController();
   RxString selectedRoute = 'car'.obs;
+  Rx<Position?> currentPosition = Rx<Position?>(null);
 
-  Future<void> search(String selectedRoute,int id) async {
+  Future<void> search(String selectedRoute, int id) async {
     String destination1 = destinationController1.text;
     String destination2 = destinationController2.text;
 
@@ -192,7 +193,7 @@ class HomeController extends GetxController {
     String? placeName = await _getPlaceName(position);
 
     String prompt =
-        "my current location is $placeName & the GPS coordinates are (Latitude: $latitude, Longitude: $longitude) I am planning to visit from  $placeName to $destination2  by road using $selectedRoute, show me the nearby places to visit";
+        "my current location is $placeName & the GPS coordinates are (Latitude: $latitude, Longitude: $longitude) I am planning to visit from  $placeName to $destination2 by road using $selectedRoute, show me the nearby places to visit";
 
     try {
       List<ChatModel> responses = await ApiService.sendMessage(
@@ -242,6 +243,7 @@ class HomeController extends GetxController {
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: Duration(seconds: 20),
       );
+      currentPosition.value = position;
       List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude, position.longitude);
       String currentLocation =
@@ -266,4 +268,5 @@ class HomeController extends GetxController {
     }
   }
 }
+
 

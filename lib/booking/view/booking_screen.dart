@@ -43,8 +43,8 @@ class _BookingScreen1State extends State<BookingScreen1> {
     promptLocation = ''; // Initialize promptLocation
   }
 
-  StreamController<List<Map<String, dynamic>>> _controller =
-  StreamController<List<Map<String, dynamic>>>();
+    StreamController<List<Map<String, dynamic>>> _controller =
+    StreamController<List<Map<String, dynamic>>>();
   List<String> selectedResponses = [];
   bool _isFetching = false; // Track whether responses are being fetched
 
@@ -252,18 +252,20 @@ class _BookingScreen1State extends State<BookingScreen1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Booking Screen'),
+        title: Text('Booking Screen',style: TextStyle(color: Colors.white),),
+        backgroundColor: Colors.teal, // Custom app bar color
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0), // Increased padding for text
             child: Text(
-              '$promptLocation',
+              'Choose Location:',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 20, // Increased font size
+                color: Colors.deepPurple, // Custom text color
               ),
             ),
           ),
@@ -273,18 +275,32 @@ class _BookingScreen1State extends State<BookingScreen1> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
-                    child: CircularProgressIndicator(),
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.deepPurple), // Custom progress indicator color
+                    ),
                   );
                 } else if (snapshot.hasError) {
                   return Center(
-                    child: Text('Error: ${snapshot.error}'),
+                    child: Text(
+                      'Error: ${snapshot.error}',
+                      style: TextStyle(
+                        color: Colors.red, // Custom error text color
+                      ),
+                    ),
                   );
                 } else {
                   List<Map<String, dynamic>>? responses = snapshot.data;
 
                   if (responses == null || responses.isEmpty) {
                     return Center(
-                      child: Text('No data available'),
+                      child: Text(
+                        'No data available',
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic, // Italics for empty data message
+                          color: Colors.grey, // Custom text color
+                        ),
+                      ),
                     );
                   }
 
@@ -300,25 +316,39 @@ class _BookingScreen1State extends State<BookingScreen1> {
               },
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              if (selectedResponses.isNotEmpty) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        SelectedResponsesLocationScreen(selectedResponses),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('No response selected!'),
-                  ),
-                );
-              }
-            },
-            child: Text('Show Selected Responses'),
+          SizedBox(height: 20), // Added spacing between the list and button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ElevatedButton(
+              onPressed: () {
+                if (selectedResponses.isNotEmpty) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          SelectedResponsesLocationScreen(selectedResponses),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('No response selected!'),
+                      backgroundColor: Colors.red, // Custom snackbar color
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                primary: Colors.teal, // Custom button color
+                onPrimary: Colors.white, // Custom text color
+              ),
+              child: Text(
+                'Show Selected Responses',
+                style: TextStyle(
+                  fontSize: 18, // Increased button text size
+                ),
+              ),
+            ),
           ),
         ],
       ),

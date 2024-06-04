@@ -216,7 +216,8 @@
 
 
   import 'dart:convert';
-
+  import 'package:google_maps_flutter/google_maps_flutter.dart';
+  import 'package:geolocator/geolocator.dart';
 import 'package:flutter/material.dart';
   import 'package:get/get.dart';
 import 'package:smarttravelapp/constants/api_consts.dart';
@@ -381,6 +382,8 @@ import '../../booking/view/booking_screen.dart';
       return Scaffold(
         appBar: AppBar(
           title: const Text('Home'),
+          backgroundColor: Colors.teal,
+
         ),
         body: Center(
           child: _widgetOptions.elementAt(_selectedIndex),
@@ -408,6 +411,8 @@ import '../../booking/view/booking_screen.dart';
     }
   }
 
+
+
   class HomeView extends StatelessWidget {
     final String username; // Declare username here
     final int id; // Declare id here
@@ -415,113 +420,291 @@ import '../../booking/view/booking_screen.dart';
     // Constructor to receive username and id
     const HomeView({Key? key, required this.username, required this.id}) : super(key: key);
 
-
     @override
     Widget build(BuildContext context) {
       final HomeController controller = Get.find();
 
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text('Welcome, $username!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              Text('Your ID is $id', style: TextStyle(fontSize: 16)),
-              SizedBox(height: 20),
-              _buildDestinationTextField(controller.destinationController1, 'Current Location', Icons.my_location, () async {
-                await controller.getCurrentLocation();
-              }),
-              _buildDestinationTextField(controller.destinationController2, 'Search Destination 2', Icons.location_on, null),
-              SizedBox(height: 20),
-              Text('Preferred Route:', style: TextStyle(fontSize: 16)),
-              Obx(() => Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Radio(
-                    value: 'car',
-                    groupValue: controller.selectedRoute.value,
-                    onChanged: (value) {
-                      controller.selectedRoute.value = value.toString();
-                    },
-                  ),
-                  Icon(Icons.directions_car),
-                  Radio(
-                    value: 'bike',
-                    groupValue: controller.selectedRoute.value,
-                    onChanged: (value) {
-                      controller.selectedRoute.value = value.toString();
-                    },
-                  ),
-                  Icon(Icons.directions_bike),
-                ],
-              )),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
+      return Scaffold(
+        // appBar: AppBar(
+        //   // title: const Text('Smart Travel Home'),
+        //   // backgroundColor: Colors.teal,
+        // ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Card(
+                    elevation: 4,
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircularProgressIndicator(),
-                          SizedBox(width: 10),
-                          Text("Please Wait Getting Routes"),
+                          Text(
+                            'Welcome, $username!',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.teal),
+                          ),
+                          Text(
+                            'Your ID is $id',
+                            style: TextStyle(fontSize: 14, color: Colors.black54),
+                          ),
                         ],
                       ),
-                      duration: Duration(seconds: 20),
                     ),
-                  );
+                  ),
+                ),
+                SizedBox(height: 20),
+                Obx(() {
+                  if (controller.currentPosition.value == null) {
+                    return CircularProgressIndicator();
+                  } else {
+                    return Container(
+                      height: 300,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: LatLng(
+                              controller.currentPosition.value!.latitude,
+                              controller.currentPosition.value!.longitude,
+                            ),
+                            zoom: 14.0,
+                          ),
+                          markers: {
+                            Marker(
+                              markerId: MarkerId('currentLocation'),
+                              position: LatLng(
+                                controller.currentPosition.value!.latitude,
+                                controller.currentPosition.value!.longitude,
+                              ),
+                            ),
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                }),
+                SizedBox(height: 20),
+                _buildDestinationTextField(controller.destinationController1, 'Current Location', Icons.my_location, () async {
+                  await controller.getCurrentLocation();
+                }),
+                _buildDestinationTextField(controller.destinationController2, 'Search Destination 2', Icons.location_on, null),
+                SizedBox(height: 20),
+                Text(
+                  'Preferred Route:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Obx(() => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Radio(
+                      value: 'car',
+                      groupValue: controller.selectedRoute.value,
+                      onChanged: (value) {
+                        controller.selectedRoute.value = value.toString();
+                      },
+                    ),
+                    Icon(Icons.directions_car, color: Colors.teal),
+                    Radio(
+                      value: 'bike',
+                      groupValue: controller.selectedRoute.value,
+                      onChanged: (value) {
+                        controller.selectedRoute.value = value.toString();
+                      },
+                    ),
+                    Icon(Icons.directions_bike, color: Colors.teal),
+                  ],
+                )),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(width: 10),
+                            Text("Please Wait Getting Routes"),
+                          ],
+                        ),
+                        duration: Duration(seconds: 20),
+                      ),
+                    );
 
-                  controller.search(controller.selectedRoute.value,id).then((_) {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    // Navigate to the BookingScreen1 with the ID passed as an argument
-                    Get.toNamed('/booking', arguments: {'id': id});
-                  });
-                },
-                child: Text('Search'),
-              ),
-
-              // ElevatedButton(
-              //   onPressed: () {
-              //     ScaffoldMessenger.of(context).showSnackBar(
-              //       SnackBar(
-              //         content: Row(
-              //           children: [
-              //             CircularProgressIndicator(),
-              //             SizedBox(width: 10),
-              //             Text("Please Wait Getting Routes"),
-              //           ],
-              //         ),
-              //         duration: Duration(seconds: 20),
-              //       ),
-              //     );
-              //
-              //     controller.search(controller.selectedRoute.value).then((_) {
-              //       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              //     });
-              //   },
-              //   child: Text('Search'),
-              // ),
-            ],
+                    controller.search(controller.selectedRoute.value, id).then((_) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      // Navigate to the BookingScreen1 with the ID passed as an argument
+                      Get.toNamed('/booking', arguments: {'id': id});
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.teal,
+                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    textStyle: TextStyle(fontSize: 18),
+                  ),
+                  child: Text('Search', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
 
     Widget _buildDestinationTextField(TextEditingController controller, String labelText, IconData icon, VoidCallback? onTap) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: TextField(
-          controller: controller,
-          onTap: onTap,
-          decoration: InputDecoration(
-            labelText: labelText,
-            prefixIcon: Icon(icon),
+      return Card(
+        elevation: 4,
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: TextField(
+            controller: controller,
+            onTap: onTap,
+            decoration: InputDecoration(
+              labelText: labelText,
+              prefixIcon: Icon(icon),
+              border: InputBorder.none,
+            ),
           ),
         ),
       );
     }
   }
+
+
+  // class HomeView extends StatelessWidget {
+  //   final String username; // Declare username here
+  //   final int id; // Declare id here
+  //
+  //   // Constructor to receive username and id
+  //   const HomeView({Key? key, required this.username, required this.id}) : super(key: key);
+  //
+  //   @override
+  //   Widget build(BuildContext context) {
+  //     final HomeController controller = Get.find();
+  //
+  //     return Padding(
+  //       padding: const EdgeInsets.all(8.0),
+  //       child: SingleChildScrollView(
+  //         child: Column(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: <Widget>[
+  //             Text('Welcome, $username!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+  //             Text('Your ID is $id', style: TextStyle(fontSize: 16)),
+  //             SizedBox(height: 20),
+  //             Obx(() {
+  //               if (controller.currentPosition.value == null) {
+  //                 return CircularProgressIndicator();
+  //               } else {
+  //                 return Container(
+  //                   height: 300,
+  //                   child: GoogleMap(
+  //                     initialCameraPosition: CameraPosition(
+  //                       target: LatLng(
+  //                         controller.currentPosition.value!.latitude,
+  //                         controller.currentPosition.value!.longitude,
+  //                       ),
+  //                       zoom: 14.0,
+  //                     ),
+  //                     markers: {
+  //                       Marker(
+  //                         markerId: MarkerId('currentLocation'),
+  //                         position: LatLng(
+  //                           controller.currentPosition.value!.latitude,
+  //                           controller.currentPosition.value!.longitude,
+  //                         ),
+  //                       ),
+  //                     },
+  //                   ),
+  //                 );
+  //               }
+  //             }),
+  //             _buildDestinationTextField(controller.destinationController1, 'Current Location', Icons.my_location, () async {
+  //               await controller.getCurrentLocation();
+  //             }),
+  //             _buildDestinationTextField(controller.destinationController2, 'Search Destination 2', Icons.location_on, null),
+  //             SizedBox(height: 20),
+  //             Text('Preferred Route:', style: TextStyle(fontSize: 16)),
+  //             Obx(() => Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: [
+  //                 Radio(
+  //                   value: 'car',
+  //                   groupValue: controller.selectedRoute.value,
+  //                   onChanged: (value) {
+  //                     controller.selectedRoute.value = value.toString();
+  //                   },
+  //                 ),
+  //                 Icon(Icons.directions_car),
+  //                 Radio(
+  //                   value: 'bike',
+  //                   groupValue: controller.selectedRoute.value,
+  //                   onChanged: (value) {
+  //                     controller.selectedRoute.value = value.toString();
+  //                   },
+  //                 ),
+  //                 Icon(Icons.directions_bike),
+  //               ],
+  //             )),
+  //             SizedBox(height: 20),
+  //             ElevatedButton(
+  //               onPressed: () {
+  //                 ScaffoldMessenger.of(context).showSnackBar(
+  //                   SnackBar(
+  //                     content: Row(
+  //                       children: [
+  //                         CircularProgressIndicator(),
+  //                         SizedBox(width: 10),
+  //                         Text("Please Wait Getting Routes"),
+  //                       ],
+  //                     ),
+  //                     duration: Duration(seconds: 20),
+  //                   ),
+  //                 );
+  //
+  //                 controller.search(controller.selectedRoute.value, id).then((_) {
+  //                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  //                   // Navigate to the BookingScreen1 with the ID passed as an argument
+  //                   Get.toNamed('/booking', arguments: {'id': id});
+  //                 });
+  //               },
+  //               child: Text('Search'),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     );
+  //   }
+  //
+  //   Widget _buildDestinationTextField(TextEditingController controller, String labelText, IconData icon, VoidCallback? onTap) {
+  //     return Padding(
+  //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+  //       child: TextField(
+  //         controller: controller,
+  //         onTap: onTap,
+  //         decoration: InputDecoration(
+  //           labelText: labelText,
+  //           prefixIcon: Icon(icon),
+  //         ),
+  //       ),
+  //     );
+  //   }
+  // }
 
   // class ProfileView extends StatelessWidget {
   //   @override

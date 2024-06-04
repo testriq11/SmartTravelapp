@@ -6,8 +6,9 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import '../controller/signup_controller.dart';
-
 
 class SignUpView extends StatefulWidget {
   @override
@@ -19,34 +20,52 @@ class _SignUpViewState extends State<SignUpView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  SignUpController _controller = SignUpController();
+  final SignUpController _controller = Get.put(SignUpController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sign Up'),
+        title: const Text('Sign Up'),
+        backgroundColor: Colors.teal,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(20.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+              decoration: const InputDecoration(
+                labelText: 'Username',
+                prefixIcon: Icon(Icons.person),
+                border: OutlineInputBorder(),
+              ),
             ),
+            const SizedBox(height: 20),
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email),
+                border: OutlineInputBorder(),
+              ),
             ),
+            const SizedBox(height: 20),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
               obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                prefixIcon: Icon(Icons.lock),
+                border: OutlineInputBorder(),
+              ),
             ),
-            SizedBox(height: 20.0),
-            ElevatedButton(
+            const SizedBox(height: 30),
+            Obx(() => _controller.isLoading.value
+                ? Center(child: CircularProgressIndicator())
+                : ElevatedButton(
               onPressed: () {
                 _controller.signUp(
                   _usernameController.text,
@@ -54,7 +73,25 @@ class _SignUpViewState extends State<SignUpView> {
                   _passwordController.text,
                 );
               },
-              child: Text('Sign Up'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.teal,
+                padding: EdgeInsets.symmetric(vertical: 15),
+                textStyle: TextStyle(fontSize: 18),
+              ),
+              child: const Text('Sign Up'),
+            )),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                // Implement Google sign-up
+              },
+              style: ElevatedButton.styleFrom(
+                primary: Colors.red,
+                padding: EdgeInsets.symmetric(vertical: 15),
+                textStyle: TextStyle(fontSize: 18),
+              ),
+              icon: FaIcon(FontAwesomeIcons.google, color: Colors.white),
+              label: const Text('Sign Up with Google'),
             ),
           ],
         ),
