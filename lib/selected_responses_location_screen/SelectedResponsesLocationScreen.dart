@@ -5,6 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
+
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
+import 'dart:convert';
+
 class SelectedResponsesLocationScreen extends StatefulWidget {
   final List<String> selectedResponses;
 
@@ -18,11 +32,17 @@ class _SelectedResponsesLocationScreenState extends State<SelectedResponsesLocat
   late GoogleMapController _mapController;
   final List<Map<String, dynamic>> _locations = [];
   bool _isLoading = true;
+  String? _mapStyle;
 
   @override
   void initState() {
     super.initState();
+    _loadMapStyle();
     _geocodeLocations();
+  }
+
+  Future<void> _loadMapStyle() async {
+    _mapStyle = await DefaultAssetBundle.of(context).loadString('assets/map_style.json');
   }
 
   Future<void> _geocodeLocations() async {
@@ -71,15 +91,30 @@ class _SelectedResponsesLocationScreenState extends State<SelectedResponsesLocat
           Expanded(
             child: _locations.isEmpty
                 ? Center(child: Text('No valid locations to display on the map.'))
-                : GoogleMap(
-              onMapCreated: (controller) {
-                _mapController = controller;
-              },
-              initialCameraPosition: CameraPosition(
-                target: _locations[0]['latLng'],
-                zoom: 10,
+                : Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                elevation: 5,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15.0),
+                  child: GoogleMap(
+                    onMapCreated: (controller) {
+                      _mapController = controller;
+                      if (_mapStyle != null) {
+                        _mapController.setMapStyle(_mapStyle);
+                      }
+                    },
+                    initialCameraPosition: CameraPosition(
+                      target: _locations[0]['latLng'],
+                      zoom: 10,
+                    ),
+                    markers: _createMarkers(),
+                  ),
+                ),
               ),
-              markers: _createMarkers(),
             ),
           ),
           Expanded(
@@ -92,6 +127,14 @@ class _SelectedResponsesLocationScreenState extends State<SelectedResponsesLocat
                 );
               },
             ),
+
+          ),
+          SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+              // Add your functionality for the start button here
+            },
+            child: Text('Start Journey'),
           ),
         ],
       ),
@@ -108,5 +151,8 @@ class _SelectedResponsesLocationScreenState extends State<SelectedResponsesLocat
     }).toSet();
   }
 }
+
+
+
 
 
