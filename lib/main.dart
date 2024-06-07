@@ -5,6 +5,7 @@ import 'package:smarttravelapp/home/view/home_screen.dart';
 import 'package:smarttravelapp/login/controller/signup_controller.dart';
 import 'package:smarttravelapp/login/view/login_screen.dart';
 import 'package:smarttravelapp/login/view/signup_screen.dart';
+import 'package:smarttravelapp/profile/view/profile_screen.dart';
 import 'package:smarttravelapp/splash/welcom_screen.dart';
 import 'package:smarttravelapp/login/controller/login_controller.dart'; // Import your LoginController
   import 'package:smarttravelapp/login/view/signup_screen.dart';
@@ -63,7 +64,8 @@ class MyApp extends StatelessWidget {
         //   },
         // ),.
         GetPage(name: '/booking', page: () => BookingScreen1()),
-      ],
+        GetPage(name:'/profiledetails', page: ()=> ProfilePage())
+      ]
     );
   }
 }

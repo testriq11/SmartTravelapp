@@ -730,7 +730,7 @@ import '../../booking/view/booking_screen.dart';
             ListTile(
               title: const Text('Profile'),
               onTap: () {
-                // Navigate to profile screen
+                Get.toNamed('/profiledetails');
               },
             ),
             ListTile(
