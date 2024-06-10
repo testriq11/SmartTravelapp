@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
           name: '/home',
           page: () => HomeScreen(),
         ),
-        GetPage(name: '/', page: () => ProfileView(id: Get.arguments['id'])),
+        GetPage(name: '/', page: () => ProfileView(id: Get.arguments['id'],username: Get.arguments['username'])),
 
         GetPage(name: '/bookingHistory', page: () => BookingHistoryView(id: Get.arguments['id'])),
         // GetPage(
@@ -64,7 +64,14 @@ class MyApp extends StatelessWidget {
         //   },
         // ),.
         GetPage(name: '/booking', page: () => BookingScreen1()),
-        GetPage(name:'/profiledetails', page: ()=> ProfilePage())
+        // GetPage(
+        //   name: '/profiledetails',
+        //   page: () => ProfilePage(id: Get.arguments['id']), // Pass the id from arguments
+        // ),
+        GetPage(
+          name: '/profiledetails',
+          page: () => ProfilePage(id: Get.arguments['id']), // Pass the id from arguments
+        ),
       ]
     );
   }

@@ -375,7 +375,7 @@ import '../../booking/view/booking_screen.dart';
 
  final List<Widget> _widgetOptions = <Widget>[
         HomeView(username: username, id: id),
-        ProfileView(id:id),
+        ProfileView(id:id,username: username,),
         BookingScreen()
         // BookingHistoryView(id: id),
       ];
@@ -717,7 +717,8 @@ import '../../booking/view/booking_screen.dart';
 
   class ProfileView extends StatelessWidget {
     final int id;
-    const ProfileView({super.key, required this.id});
+    final String username;
+    const ProfileView({super.key, required this.id, required this.username});
 
     @override
     Widget build(BuildContext context) {
@@ -730,7 +731,7 @@ import '../../booking/view/booking_screen.dart';
             ListTile(
               title: const Text('Profile'),
               onTap: () {
-                Get.toNamed('/profiledetails');
+                Get.toNamed('/profiledetails', arguments: {'id': id,'username':username});
               },
             ),
             ListTile(
