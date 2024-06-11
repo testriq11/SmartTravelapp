@@ -375,8 +375,9 @@ import '../../booking/view/booking_screen.dart';
 
  final List<Widget> _widgetOptions = <Widget>[
         HomeView(username: username, id: id),
+        BookingScreen(),
         ProfileView(id:id,username: username,),
-        BookingScreen()
+
         // BookingHistoryView(id: id),
       ];
       return Scaffold(
@@ -395,13 +396,14 @@ import '../../booking/view/booking_screen.dart';
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-            BottomNavigationBarItem(
               icon: Icon(Icons.book),
               label: 'Booking History',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+
           ],
           currentIndex: _selectedIndex,
           selectedItemColor: Colors.blue,
@@ -752,6 +754,7 @@ import '../../booking/view/booking_screen.dart';
               title: const Text('Settings'),
               onTap: () {
                 // Navigate to settings screen
+                Get.toNamed('/setting');
               },
             ),
             ListTile(
