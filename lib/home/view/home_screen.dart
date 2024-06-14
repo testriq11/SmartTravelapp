@@ -342,7 +342,7 @@ import 'package:smarttravelapp/constants/api_consts.dart';
   import 'package:smarttravelapp/home/controller/home_controller.dart';
   import 'package:http/http.dart' as http;
 import '../../booking/view/booking_screen.dart';
-
+  import 'package:shared_preferences/shared_preferences.dart';
   // Define a global controller to manage and share state
   class GlobalController extends GetxController {
     var username = ''.obs;
@@ -359,11 +359,27 @@ import '../../booking/view/booking_screen.dart';
 
   class _HomeScreenState extends State<HomeScreen> {
     final HomeController controller = Get.put(HomeController());
+    final GlobalController globalController = Get.put(GlobalController());
     int _selectedIndex = 0;
 
+    late String username;
+    late int id;
     void _onItemTapped(int index) {
       setState(() {
         _selectedIndex = index;
+      });
+    }
+
+    @override
+    void initState() {
+      super.initState();
+      _loadUserData();
+    }
+    void _loadUserData() async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        username = prefs.getString('username') ?? '';
+        id = prefs.getInt('id') ?? 0;
       });
     }
 

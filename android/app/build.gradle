@@ -38,6 +38,7 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+
     }
 
     defaultConfig {
@@ -49,6 +50,15 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+    }
+
+    signingConfigs {
+        debug {
+            keyAlias 'uploadkeystore12'
+            keyPassword 'android'
+            storeFile file('upload-keystore12.jks')
+            storePassword 'android'
+        }
     }
 
     buildTypes {
