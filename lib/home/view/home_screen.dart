@@ -799,8 +799,12 @@ import '../../booking/view/booking_screen.dart';
             ),
             ListTile(
               title: const Text('Logout'),
-              onTap: () {
+              onTap: () async {
                 // Implement logout functionality
+                // Clear user data and navigate to login screen
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
+                Get.offAllNamed('/login');
               },
             ),
           ],

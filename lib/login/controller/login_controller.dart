@@ -169,7 +169,6 @@ class LoginController extends GetxController {
     }
   }
 
-
   void newlogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String savedEmail = prefs.getString('email') ?? '';
@@ -201,26 +200,72 @@ class LoginController extends GetxController {
             });
           } else {
             isLoading.value = false;
-            Get.snackbar('Error', responseData['error'],
-                snackPosition: SnackPosition.BOTTOM);
+            print('Error: ${responseData['error']}');
           }
         } else {
           isLoading.value = false;
-          Get.snackbar('Error', 'Server error',
-              snackPosition: SnackPosition.BOTTOM);
+          print('Server error');
         }
       } catch (e) {
         isLoading.value = false;
         print('Exception occurred: $e');
-        Get.snackbar('Error', 'An error occurred',
-            snackPosition: SnackPosition.BOTTOM);
       }
     } else {
-      Get.snackbar('Error', 'No saved email found',
-          snackPosition: SnackPosition.BOTTOM);
+      print('No saved email found');
     }
   }
 
+
+  // void newlogin() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String savedEmail = prefs.getString('email') ?? '';
+  //
+  //   if (savedEmail.isNotEmpty) {
+  //     isLoading.value = true;
+  //
+  //     try {
+  //       final response = await http.post(
+  //         Uri.parse('$NGROK_URL/login/login'),
+  //         headers: <String, String>{
+  //           'Content-Type': 'application/json; charset=UTF-8',
+  //         },
+  //         body: jsonEncode(<String, String>{
+  //           'email': savedEmail,
+  //           'password': '123',
+  //         }),
+  //       );
+  //
+  //       if (response.statusCode == 200) {
+  //         final Map<String, dynamic> responseData = json.decode(response.body);
+  //         if (responseData['success'] == true) {
+  //           isLoading.value = false;
+  //
+  //           Get.offAllNamed('/home', arguments: {
+  //             'id': responseData['user']['id'],
+  //             'username': responseData['user']['username'],
+  //             'email': responseData['user']['email']
+  //           });
+  //         } else {
+  //           isLoading.value = false;
+  //           Get.snackbar('Error', responseData['error'],
+  //               snackPosition: SnackPosition.BOTTOM);
+  //         }
+  //       } else {
+  //         isLoading.value = false;
+  //         Get.snackbar('Error', 'Server error',
+  //             snackPosition: SnackPosition.BOTTOM);
+  //       }
+  //     } catch (e) {
+  //       isLoading.value = false;
+  //       print('Exception occurred: $e');
+  //       Get.snackbar('Error', 'An error occurred',
+  //           snackPosition: SnackPosition.BOTTOM);
+  //     }
+  //   } else {
+  //     Get.snackbar('Error', 'No saved email found',
+  //         snackPosition: SnackPosition.BOTTOM);
+  //   }
+  // }
 
   void googleLogin() async {
     print("Google login method called");
@@ -240,8 +285,33 @@ class LoginController extends GetxController {
         String email = googleUser.email ?? '';
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('username', username);
-        await prefs.setString('email', email);
+
+        // Check if user data is already saved in SharedPreferences
+        String? savedUsername = prefs.getString('username');
+        String? savedEmail = prefs.getString('email');
+
+        if (savedUsername == username && savedEmail == email) {
+          print('User already logged in.');
+          newlogin(); // Attempt to log in
+          try {
+            Map<String, dynamic> responseData = await getResponseData();
+            if (responseData.containsKey('user')) {
+              await prefs.setInt('id', responseData['user']['id']);
+              await prefs.setString('username', responseData['user']['username']);
+              await prefs.setString('email', responseData['user']['email']);
+              Get.offAllNamed('/home', arguments: {
+                'id': responseData['user']['id'],
+                'username': responseData['user']['username'],
+                'email': responseData['user']['email']
+              });
+            } else {
+              print('User data not found');
+            }
+          } catch (e) {
+            print('Exception occurred while fetching user data: $e');
+          }
+          return; // Exit the function early
+        }
 
         // Call signUpController.signUp() asynchronously
         bool signUpSuccess = await signUpController.signUp(username, email, '123');
@@ -255,39 +325,105 @@ class LoginController extends GetxController {
           newlogin(); // Call your login method
 
           // Retrieve responseData after login
-          Map<String, dynamic> responseData = await getResponseData();
+          try {
+            Map<String, dynamic> responseData = await getResponseData();
+            if (responseData.containsKey('user')) {
+              // Save user data in SharedPreferences after successful login
+              await prefs.setInt('id', responseData['user']['id']);
+              await prefs.setString('username', responseData['user']['username']);
+              await prefs.setString('email', responseData['user']['email']);
 
-          if (responseData.containsKey('user')) {
-            // Save user data in SharedPreferences after successful login
-            await prefs.setInt('id', responseData['user']['id']);
-            await prefs.setString('username', responseData['user']['username']);
-            await prefs.setString('email', responseData['user']['email']);
-
-            // Navigate to home screen with user data
-            Get.offAllNamed('/home', arguments: {
-              'id': responseData['user']['id'],
-              'username': responseData['user']['username'],
-              'email': responseData['user']['email']
-            });
-          } else {
-            // Handle case where responseData doesn't contain expected user data
-            Get.snackbar('Error', 'User data not found',
-                snackPosition: SnackPosition.BOTTOM);
+              // Navigate to home screen with user data
+              Get.offAllNamed('/home', arguments: {
+                'id': responseData['user']['id'],
+                'username': responseData['user']['username'],
+                'email': responseData['user']['email']
+              });
+            } else {
+              print('User data not found');
+            }
+          } catch (e) {
+            print('Exception occurred while fetching user data: $e');
           }
         } else {
           print('Failed to sign up user');
-          Get.snackbar('Error', 'Failed to sign up user',
-              snackPosition: SnackPosition.BOTTOM);
         }
       } else {
         print('Google sign-in failed.');
       }
     } catch (error) {
       print('Error signing in with Google: $error');
-      Get.snackbar('Error', 'Failed to sign in with Google',
-          snackPosition: SnackPosition.BOTTOM);
     }
   }
+
+
+
+  // void googleLogin() async {
+  //   print("Google login method called");
+  //
+  //   try {
+  //     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+  //     if (googleUser != null) {
+  //       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+  //
+  //       print('Google Auth ID Token: ${googleAuth.idToken}');
+  //       print('Google Auth Access Token: ${googleAuth.accessToken}');
+  //       print('id: ${googleUser.id}');
+  //       print('username: ${googleUser.displayName}');
+  //       print('email: ${googleUser.email}');
+  //
+  //       String username = googleUser.displayName ?? '';
+  //       String email = googleUser.email ?? '';
+  //
+  //       SharedPreferences prefs = await SharedPreferences.getInstance();
+  //       await prefs.setString('username', username);
+  //       await prefs.setString('email', email);
+  //
+  //       // Call signUpController.signUp() asynchronously
+  //       bool signUpSuccess = await signUpController.signUp(username, email, '123');
+  //
+  //       if (signUpSuccess) {
+  //         // Save user data in SharedPreferences after successful signup
+  //         await prefs.setString('username', username);
+  //         await prefs.setString('email', email);
+  //
+  //         // Proceed with login attempt after signing up (whether successful or not)
+  //         newlogin(); // Call your login method
+  //
+  //         // Retrieve responseData after login
+  //         Map<String, dynamic> responseData = await getResponseData();
+  //
+  //         if (responseData.containsKey('user')) {
+  //           // Save user data in SharedPreferences after successful login
+  //           await prefs.setInt('id', responseData['user']['id']);
+  //           await prefs.setString('username', responseData['user']['username']);
+  //           await prefs.setString('email', responseData['user']['email']);
+  //
+  //           // Navigate to home screen with user data
+  //           Get.offAllNamed('/home', arguments: {
+  //             'id': responseData['user']['id'],
+  //             'username': responseData['user']['username'],
+  //             'email': responseData['user']['email']
+  //           });
+  //         } else {
+  //           // Handle case where responseData doesn't contain expected user data
+  //           Get.snackbar('Error', 'User data not found',
+  //               snackPosition: SnackPosition.BOTTOM);
+  //         }
+  //       } else {
+  //         print('Failed to sign up user');
+  //         Get.snackbar('Error', 'Failed to sign up user',
+  //             snackPosition: SnackPosition.BOTTOM);
+  //       }
+  //     } else {
+  //       print('Google sign-in failed.');
+  //     }
+  //   } catch (error) {
+  //     print('Error signing in with Google: $error');
+  //     Get.snackbar('Error', 'Failed to sign in with Google',
+  //         snackPosition: SnackPosition.BOTTOM);
+  //   }
+  // }
   // void googleLogin() async {
   //   print("Google login method called");
   //
